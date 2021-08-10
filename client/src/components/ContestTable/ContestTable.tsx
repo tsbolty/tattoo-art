@@ -10,7 +10,6 @@ import { KeyboardDatePicker, MuiPickersUtilsProvider } from '@material-ui/picker
 import DateRangeIcon from '@material-ui/icons/DateRange';
 import MomentUtils from '@date-io/moment';
 import moment from 'moment';
-import Container from '@material-ui/core/Container';
 import Button from '@material-ui/core/Button';
 import Paper from '@material-ui/core/Paper';
 import TableContainer from '@material-ui/core/TableContainer';
@@ -19,8 +18,6 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import TableBody from '@material-ui/core/TableBody';
-import SortIcon from '@material-ui/icons/Sort';
-import { Animated } from 'react-animated-css';
 import useStyles from './useStyles';
 import SectionHeader from '../../components/SectionHeader/SectionHeader';
 import { Link } from 'react-router-dom';
@@ -37,7 +34,6 @@ const ContestTable = ({ allContestsLength }: Props): JSX.Element => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [dateFilter, setDateFilter] = useState<any>();
   const classes = useStyles();
-  const { updateSnackBarMessage } = useSnackBar();
 
   useEffect(() => {
     if (!dateFilter && !contests) {
