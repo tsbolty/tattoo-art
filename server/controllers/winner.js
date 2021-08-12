@@ -15,6 +15,7 @@ exports.getSomeWinners = asyncHandler(async (req, res) => {
     if(isNaN(parseInt(req.params.num))){
       return res.status(400).send("Not a number")
     }
+    res.setHeader("Access-Control-Allow-Origin", "*");
     const winners = await Winner.find({}).populate("winningArtist").populate({path: "contestOwner", select: "-__v -password"}).limit(+req.params.num)
     res.status(200).json(winners)
   } catch (err) {
