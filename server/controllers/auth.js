@@ -10,222 +10,232 @@ const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 // @desc Register user
 // @access Public
 exports.registerUser = asyncHandler(async (req, res, next) => {
-  const { username, email, password } = req.body;
+	res.setHeader("Access-Control-Allow-Origin", "*");
 
-  const emailExists = await User.findOne({
-    email,
-  });
+	const { username, email, password } = req.body;
 
-  if (emailExists) {
-    res.status(400);
-    throw new Error("A user with that email already exists");
-  }
+	const emailExists = await User.findOne({
+		email
+	});
 
-  const usernameExists = await User.findOne({
-    username,
-  });
+	if (emailExists) {
+		res.status(400);
+		throw new Error("A user with that email already exists");
+	}
 
-  if (usernameExists) {
-    res.status(400);
-    throw new Error("A user with that username already exists");
-  }
+	const usernameExists = await User.findOne({
+		username
+	});
 
-  const customer = await stripe.customers.create({
-    email: email,
-    name: username,
-  });
+	if (usernameExists) {
+		res.status(400);
+		throw new Error("A user with that username already exists");
+	}
 
-  const user = await User.create({
-    username,
-    email,
-    password,
-    stripeId: customer.id,
-  });
+	const customer = await stripe.customers.create({
+		email: email,
+		name: username
+	});
 
-  if (user) {
-    const token = generateToken(user._id);
-    const secondsInWeek = 604800;
+	const user = await User.create({
+		username,
+		email,
+		password,
+		stripeId: customer.id
+	});
 
-    res.cookie("token", token, {
-      httpOnly: true,
-      maxAge: secondsInWeek * 1000,
-    });
+	if (user) {
+		const token = generateToken(user._id);
+		const secondsInWeek = 604800;
 
-    res.status(201).json({
-      success: {
-        user: {
-          id: user._id,
-          username: user.username,
-          email: user.email,
-          profilePic: user.profilePic,
-          stripeId: customer.id,
-        },
-      },
-    });
-  } else {
-    res.status(400);
-    throw new Error("Invalid user data");
-  }
+		res.cookie("token", token, {
+			httpOnly: true,
+			maxAge: secondsInWeek * 1000
+		});
+
+		res.status(201).json({
+			success: {
+				user: {
+					id: user._id,
+					username: user.username,
+					email: user.email,
+					profilePic: user.profilePic,
+					stripeId: customer.id
+				}
+			}
+		});
+	} else {
+		res.status(400);
+		throw new Error("Invalid user data");
+	}
 });
 
 // @route POST /auth/login
 // @desc Login user
 // @access Public
 exports.loginUser = asyncHandler(async (req, res, next) => {
-  const { email, password } = req.body;
+	res.setHeader("Access-Control-Allow-Origin", "*");
 
-  const user = await User.findOne({
-    email,
-  });
+	const { email, password } = req.body;
 
-  if (user && (await user.matchPassword(password))) {
-    const token = generateToken(user._id);
-    const secondsInWeek = 604800;
+	const user = await User.findOne({
+		email
+	});
 
-    res.cookie("token", token, {
-      httpOnly: true,
-      maxAge: secondsInWeek * 1000,
-    });
+	if (user && (await user.matchPassword(password))) {
+		const token = generateToken(user._id);
+		const secondsInWeek = 604800;
 
-    res.status(200).json({
-      success: {
-        user: {
-          id: user._id,
-          username: user.username,
-          email: user.email,
-          profilePic: user.profilePic,
-          stripeId: user.stripeId,
-        },
-      },
-    });
-  } else {
-    res.status(401);
-    throw new Error("Invalid email or password");
-  }
+		res.cookie("token", token, {
+			httpOnly: true,
+			maxAge: secondsInWeek * 1000
+		});
+
+		res.status(200).json({
+			success: {
+				user: {
+					id: user._id,
+					username: user.username,
+					email: user.email,
+					profilePic: user.profilePic,
+					stripeId: user.stripeId
+				}
+			}
+		});
+	} else {
+		res.status(401);
+		throw new Error("Invalid email or password");
+	}
 });
 
 // @route GET /auth/user
 // @desc Get user data with valid token
 // @access Private
 exports.loadUser = asyncHandler(async (req, res, next) => {
-  const user = await User.findById(req.user.id);
+	res.setHeader("Access-Control-Allow-Origin", "*");
 
-  if (!user) {
-    res.status(401);
-    throw new Error("Not authorized");
-  }
+	const user = await User.findById(req.user.id);
 
-  res.status(200).json({
-    success: {
-      user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        profilePic: user.profilePic,
-        stripeId: user.stripeId,
-      },
-    },
-  });
+	if (!user) {
+		res.status(401);
+		throw new Error("Not authorized");
+	}
+
+	res.status(200).json({
+		success: {
+			user: {
+				id: user._id,
+				username: user.username,
+				email: user.email,
+				profilePic: user.profilePic,
+				stripeId: user.stripeId
+			}
+		}
+	});
 });
 
 // @route GET /auth/logout
 // @desc Logout user
 // @access Public
 exports.logoutUser = asyncHandler(async (req, res, next) => {
-  res.clearCookie("token");
+	res.setHeader("Access-Control-Allow-Origin", "*");
 
-  res.send("You have successfully logged out");
+	res.clearCookie("token");
+
+	res.send("You have successfully logged out");
 });
 
 exports.googleLogin = asyncHandler(async (req, res, next) => {
-  const { tokenId } = req.body;
+	res.setHeader("Access-Control-Allow-Origin", "*");
 
-  client
-    .verifyIdToken({
-      idToken: tokenId,
-      audience: process.env.GOOGLE_CLIENT_ID,
-    })
-    .then((response) => {
-      const { email_verified, name, email } = response.payload;
+	const { tokenId } = req.body;
 
-      if (email_verified) {
-        User.findOne({
-          email: email,
-        }).exec((err, user) => {
-          if (err) {
-            return res.status(400).json({
-              error: "Something went wrong...",
-            });
-          } else {
-            if (user) {
-              const { _id, username, email, stripeId } = user;
+	client
+		.verifyIdToken({
+			idToken: tokenId,
+			audience: process.env.GOOGLE_CLIENT_ID
+		})
+		.then(response => {
+			const { email_verified, name, email } = response.payload;
 
-              const token = generateToken(_id);
-              const secondsInWeek = 604800;
+			if (email_verified) {
+				User.findOne({
+					email: email
+				}).exec((err, user) => {
+					if (err) {
+						return res.status(400).json({
+							error: "Something went wrong..."
+						});
+					} else {
+						if (user) {
+							const { _id, username, email, stripeId } = user;
 
-              res.cookie("token", token, {
-                httpOnly: true,
-                maxAge: secondsInWeek * 1000,
-              });
+							const token = generateToken(_id);
+							const secondsInWeek = 604800;
 
-              res.status(200).json({
-                success: {
-                  user: {
-                    id: _id,
-                    username: username,
-                    email: email,
-                    stripeId: stripeId,
-                  },
-                },
-              });
-            } else {
-              const secondsInWeek = 604800;
-              let password = email + name + name + email;
+							res.cookie("token", token, {
+								httpOnly: true,
+								maxAge: secondsInWeek * 1000
+							});
 
-              stripe.customers
-                .create({
-                  email: email,
-                  name: name,
-                })
-                .then((data) => {
-                  const newUser = new User({
-                    username: name,
-                    email,
-                    password,
-                    stripeId: data.id,
-                  });
+							res.status(200).json({
+								success: {
+									user: {
+										id: _id,
+										username: username,
+										email: email,
+										stripeId: stripeId
+									}
+								}
+							});
+						} else {
+							const secondsInWeek = 604800;
+							let password = email + name + name + email;
 
-                  newUser.save((err, data) => {
-                    if (err) {
-                      return res.status(400).json({
-                        error: "Something went wrong...",
-                      });
-                    }
+							stripe.customers
+								.create({
+									email: email,
+									name: name
+								})
+								.then(data => {
+									const newUser = new User({
+										username: name,
+										email,
+										password,
+										stripeId: data.id
+									});
 
-                    const { _id, username, email, stripeId } = newUser;
+									newUser.save((err, data) => {
+										if (err) {
+											return res.status(400).json({
+												error: "Something went wrong..."
+											});
+										}
 
-                    const token = generateToken(_id);
+										const { _id, username, email, stripeId } = newUser;
 
-                    res.cookie("token", token, {
-                      httpOnly: true,
-                      maxAge: secondsInWeek * 1000,
-                    });
+										const token = generateToken(_id);
 
-                    res.status(200).json({
-                      success: {
-                        user: {
-                          id: _id,
-                          username: username,
-                          email: email,
-                          stripeId: stripeId,
-                        },
-                      },
-                    });
-                  });
-                });
-            }
-          }
-        });
-      }
-    });
+										res.cookie("token", token, {
+											httpOnly: true,
+											maxAge: secondsInWeek * 1000
+										});
+
+										res.status(200).json({
+											success: {
+												user: {
+													id: _id,
+													username: username,
+													email: email,
+													stripeId: stripeId
+												}
+											}
+										});
+									});
+								});
+						}
+					}
+				});
+			}
+		});
 });

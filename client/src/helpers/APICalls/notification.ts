@@ -1,12 +1,12 @@
 import { FetchOptions } from '../../interface/FetchOptions';
-
 import { Notification } from '../../interface/User';
+const baseUrl = 'https://vast-spire-21489.herokuapp.com/https://tattoo-art.herokuapp.com/';
 
 type existingNotification = Notification;
 
 interface newNotification {
-  to: string,
-  notification: string
+  to: string;
+  notification: string;
 }
 
 export const createNotification = async (notification: newNotification): Promise<Notification[]> => {
@@ -16,7 +16,7 @@ export const createNotification = async (notification: newNotification): Promise
     credentials: 'include',
     body: JSON.stringify(notification),
   };
-  return await fetch(`/notification`, fetchOptions)
+  return await fetch(baseUrl + `notification`, fetchOptions)
     .then((res) => res.json())
     .catch((err) => ({
       error: { message: 'Unable to send notification', err },
@@ -29,7 +29,7 @@ export const getNotification = async (): Promise<Notification[]> => {
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
   };
-  return await fetch(`/notification`, fetchOptions)
+  return await fetch(baseUrl + `notification`, fetchOptions)
     .then((res) => res.json())
     .catch((err) => ({
       error: { message: 'Unable to get notifications', err },
@@ -45,7 +45,7 @@ export const updateNotification = async (eNotification: existingNotification): P
     body: JSON.stringify(eNotification),
   };
 
-  return await fetch(`/notification/update/${eNotification._id}`, fetchOptions)
+  return await fetch(baseUrl + `notification/update/${eNotification._id}`, fetchOptions)
     .then((res) => res.json())
     .catch((err) => ({
       error: { message: 'Unable to update notifications', err },
@@ -59,7 +59,7 @@ export const deleteNotification = async (id: string): Promise<number> => {
     credentials: 'include',
   };
 
-  return await fetch(`/notification/${id}`, fetchOptions)
-  .then(res => res.status)
-  .catch(err => err);
+  return await fetch(baseUrl + `notification/${id}`, fetchOptions)
+    .then((res) => res.status)
+    .catch((err) => err);
 };

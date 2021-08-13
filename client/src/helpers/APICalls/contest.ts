@@ -3,6 +3,7 @@ import { AuthApiData } from '../../interface/AuthApiData';
 import { Contest, Winner } from '../../interface/User';
 import { NewContest } from '../../interface/Contest';
 import axios from 'axios';
+const baseUrl = 'https://vast-spire-21489.herokuapp.com/https://tattoo-art.herokuapp.com/';
 
 export const uploadContestPic = async (file: FormData): Promise<string> => {
   const fetchOptions: FetchOptions = {
@@ -10,7 +11,7 @@ export const uploadContestPic = async (file: FormData): Promise<string> => {
     credentials: 'include',
     body: file,
   };
-  return await fetch(`/upload/contest`, fetchOptions)
+  return await fetch(baseUrl + `upload/contest`, fetchOptions)
     .then((res) => res.json())
     .catch(() => ({
       error: { message: 'Unable to connect to server. Please try again' },
@@ -24,7 +25,7 @@ export const getAllContests = async (date?: string, howMany = 10, page = 0): Pro
     credentials: 'include',
   };
 
-  return await fetch(`/contest/?deadlineDate=${date}&howMany=${howMany}&page=${page}`, fetchData)
+  return await fetch(baseUrl + `contest/?deadlineDate=${date}&howMany=${howMany}&page=${page}`, fetchData)
     .then((data) => data.json())
     .catch((err) => ({ error: { message: 'Cannot connect to server' } }));
 };
@@ -36,7 +37,7 @@ export const getNumContests = async (): Promise<number> => {
     credentials: 'include',
   };
 
-  return await fetch(`/contest/num`, fetchData)
+  return await fetch(baseUrl + `contest/num`, fetchData)
     .then((data) => data.json())
     .catch((err) => ({ error: { message: 'Cannot connect to server' } }));
 };
@@ -48,7 +49,7 @@ export const getContestByUser = async (): Promise<AuthApiData> => {
     credentials: 'include',
   };
 
-  return await fetch('/users/contests', fetchData)
+  return await fetch(baseUrl + 'users/contests', fetchData)
     .then((data) => data.json())
     .catch((err) => ({ error: { message: 'Could not find User Contests' } }));
 };
@@ -60,7 +61,7 @@ export const getContestById = async (id: string): Promise<Contest> => {
     credentials: 'include',
   };
 
-  return await fetch(`/contest/${id}`, fetchData)
+  return await fetch(baseUrl + `contest/${id}`, fetchData)
     .then((data) => data.json())
     .catch((err) => ({ error: { message: 'Could not find Contest.' } }));
 };
@@ -69,7 +70,9 @@ export const addContest = async (contest: NewContest): Promise<AuthApiData> => {
   return await axios
     .post('/contest', contest)
     .then((res) => res.data)
-    .catch(() => ({ error: { message: 'Cannot create contest, Please make sure you have added a credit card to your profile.' } }));
+    .catch(() => ({
+      error: { message: 'Cannot create contest, Please make sure you have added a credit card to your profile.' },
+    }));
 };
 
 export const chooseWinner = async (winningPic: string, submissionId: string): Promise<Winner> => {
@@ -80,7 +83,7 @@ export const chooseWinner = async (winningPic: string, submissionId: string): Pr
     body: JSON.stringify({ winningPic }),
   };
 
-  return await fetch(`/contest/${submissionId}`, fetchData)
+  return await fetch(baseUrl + `contest/${submissionId}`, fetchData)
     .then((data) => data.json())
     .catch((err) => ({ error: { message: 'Could not complete Contest.' } }));
 };

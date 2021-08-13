@@ -2,6 +2,7 @@ import { FetchOptions } from '../../interface/FetchOptions';
 import { AuthApiData } from '../../interface/AuthApiData';
 import { Convo, Message } from '../../interface/User';
 import { OtherUser } from '../../interface/Convo';
+const baseUrl = 'https://vast-spire-21489.herokuapp.com/https://tattoo-art.herokuapp.com/';
 
 interface NewMessage {
   to: string;
@@ -15,7 +16,7 @@ export const getAllConvos = async (): Promise<Convo[]> => {
     credentials: 'include',
   };
 
-  return await fetch('/api/conversation', fetchData)
+  return await fetch(baseUrl + 'api/conversation', fetchData)
     .then((data) => data.json())
     .catch((err) => ({ error: { message: 'Can not connect to server' } }));
 };
@@ -27,7 +28,7 @@ export const getOneConvo = async (friendId: string): Promise<Message[] | OtherUs
     credentials: 'include',
   };
 
-  return await fetch(`/api/conversation/${friendId}`, fetchData)
+  return await fetch(baseUrl + `api/conversation/${friendId}`, fetchData)
     .then((data) => data.json())
     .catch((err) => ({ error: { message: 'Can not connect to server' } }));
 };
@@ -40,7 +41,7 @@ export const sendMessage = async (message: NewMessage): Promise<Message> => {
     body: JSON.stringify(message),
   };
 
-  return await fetch(`/api/conversation`, fetchData)
+  return await fetch(baseUrl + `api/conversation`, fetchData)
     .then((data) => data.json())
     .catch((err) => ({ error: { message: 'Can not connect to server' } }));
 };
